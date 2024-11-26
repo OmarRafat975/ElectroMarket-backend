@@ -63,5 +63,6 @@ exports.deleteCategory = async (req, res, next) => {
   await Category.findByIdAndDelete(req.params.id);
   res.status(201).json({
     status: 'success',
+    message: 'Product Deleted Successfully',
   });
 };
