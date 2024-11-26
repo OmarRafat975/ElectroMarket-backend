@@ -5,31 +5,56 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: true,
+  },
+  richDescription: {
+    type: String,
+    default: '',
+  },
+  image: {
+    type: String,
+    default: '',
+  },
+  images: [
+    {
+      type: String,
+      default: '',
+    },
+  ],
+  brand: {
+    type: String,
+    default: '',
+  },
   price: {
     type: Number,
     default: 0,
   },
-  stock: {
+  category: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: 'Category',
+    required: true,
+  },
+  countInStock: {
+    type: Number,
+    default: 1,
+  },
+  rating: {
     type: Number,
     default: 0,
   },
-  brand: {
-    type: String,
-    required: true,
+  numReviews: {
+    type: Number,
+    default: 0,
   },
-  State: {
-    type: String,
+  isFeatured: {
+    type: Boolean,
+    default: false,
   },
-  description: {
-    type: String,
-  },
-  additonal: {
-    weight: { type: String, default: 'unknown' },
-    dimensions: { type: String, default: 'unknown' },
-    connection: { type: String, default: 'unknown' },
-    material: { type: String, default: 'unknown' },
-    power: { type: String, default: 'unknown' },
-    contents: { type: String, default: 'unknown' },
+  dateCreated: {
+    type: Date,
+    default: Date.now,
   },
 });
 
