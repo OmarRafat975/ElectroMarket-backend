@@ -5,32 +5,50 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  price: {
-    type: Number,
-    default: 0,
-  },
-  stock: {
-    type: Number,
-    default: 0,
-  },
-  brand: {
+  email: {
     type: String,
     required: true,
   },
-  State: {
+  password: {
     type: String,
+    required: true,
   },
-  description: {
+  phone: {
+    type: Number,
+    required: true,
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  street: {
     type: String,
+    default: '',
   },
-  additonal: {
-    weight: { type: String, default: 'unknown' },
-    dimensions: { type: String, default: 'unknown' },
-    connection: { type: String, default: 'unknown' },
-    material: { type: String, default: 'unknown' },
-    power: { type: String, default: 'unknown' },
-    contents: { type: String, default: 'unknown' },
+  apartment: {
+    type: String,
+    default: '',
   },
+  city: {
+    type: String,
+    default: '',
+  },
+  zip: {
+    type: String,
+    default: '',
+  },
+  country: {
+    type: String,
+    default: '',
+  },
+});
+
+userSchema.virtual('id').get(function () {
+  return this._id.toHexString();
+});
+
+userSchema.set('toJSON', {
+  virtuals: true,
 });
 
 const User = mongoose.model('User', userSchema);

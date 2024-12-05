@@ -5,7 +5,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(productController.createProduct)
+  .post(productController.validateCategory, productController.createProduct)
   .get(productController.getAllProducts);
 
 /////////////////////////////Filtering//////////////////////////////////
@@ -16,7 +16,7 @@ router
   .route('/:id')
   .all(productController.validateID)
   .get(productController.getProduct)
-  .patch(productController.updateProduct)
+  .patch(productController.checkCategory, productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;
