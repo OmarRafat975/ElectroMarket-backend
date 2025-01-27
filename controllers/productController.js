@@ -1,8 +1,21 @@
 const mongoose = require('mongoose');
+// const multer = require('multer');
 const Product = require('../models/productsModel');
 const handlerFactory = require('./handlerFactory');
 const Category = require('../models/categoryModel');
 const AppError = require('../helpers/appError');
+
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'public/uploads');
+//   },
+//   filename: function (req, file, cb) {
+//     const fileName = file.originalname.replace(' ', '-');
+//     cb(null, `${fileName}-${Date.now()}`);
+//   },
+// });
+
+// const upload = multer({ storage: storage });
 
 exports.validateID = (req, res, next) => {
   const { id } = req.params;
@@ -37,6 +50,8 @@ exports.getAllProducts = async (req, res, next) => {
     path: 'category',
     select: 'name -_id',
   });
+  console.log(products);
+
   res.status(200).json({
     status: 'Success',
     data: products,

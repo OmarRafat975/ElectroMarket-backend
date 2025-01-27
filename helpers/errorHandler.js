@@ -46,7 +46,8 @@ const sendErrorProd = (err, req, res) => {
     console.error('ERROR', err);
     return res.status(500).json({
       status: 'Error',
-      message: 'Something Went Wrong :(',
+      title: 'SomeThing Went Wrong!',
+      message: 'Please Try Again Later',
     });
   }
   if (err.isOperational) {
@@ -67,7 +68,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'ERROR';
   if (process.env.NODE_ENV === 'development') {
     sendErrorDiv(err, req, res);
-  } else if (process.env.NODE_ENV === 'production ') {
+  } else if (process.env.NODE_ENV === 'production') {
     let error = JSON.parse(JSON.stringify(err));
     error.message = err.message;
     if (error.name === 'CastError') error = handleCastErrorDB(error);

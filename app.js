@@ -1,13 +1,18 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+// const mongoSanitize = require('express-mongo-sanitize');
+// const xss = require('xss-clean');
+const hpp = require('hpp');
 
 // importing Routers
 const productRouter = require('./routes/productRoutes');
 const categoryRouter = require('./routes/categoryRoutes');
 const usersRouter = require('./routes/usersRoutes');
 const ordersRouter = require('./routes/ordersRoutes');
-const authJwt = require('./helpers/jwtAuth');
+// const authJwt = require('./helpers/jwtAuth');
 const errorHandler = require('./helpers/errorHandler');
 const AppError = require('./helpers/appError');
 
@@ -19,9 +24,24 @@ app.use(cors());
 // app.options('*', cors());
 
 //MiddleWare
-app.use(express.json());
-app.use(morgan('tiny'));
-app.use(authJwt());
+
+if (process.env.NODE_ENV === 'development') app.use(morgan('tiny'));
+
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again later',
+});
+app.use('/api', limiter);
+
+app.use(express.json({ limit: '10kb' }));
+
+// app.use(mongoSanitize());
+
+// app.use(xss());
+app.use(hpp());
+
+// app.use(authJwt());
 //Routers
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/category`, categoryRouter);

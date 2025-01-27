@@ -1,36 +1,77 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-  name: {
+  orderItems: [
+    {
+      quantity: {
+        type: Number,
+        required: true,
+      },
+      product: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
+    },
+  ],
+  shippingAddress1: {
     type: String,
     required: true,
   },
-  price: {
-    type: Number,
-    default: 0,
+  shippingAddress2: {
+    type: String,
   },
-  stock: {
-    type: Number,
-    default: 0,
-  },
-  brand: {
+  city: {
     type: String,
     required: true,
   },
-  State: {
+  zip: {
     type: String,
+    required: true,
   },
-  description: {
+  country: {
     type: String,
+    required: true,
   },
-  additonal: {
-    weight: { type: String, default: 'unknown' },
-    dimensions: { type: String, default: 'unknown' },
-    connection: { type: String, default: 'unknown' },
-    material: { type: String, default: 'unknown' },
-    power: { type: String, default: 'unknown' },
-    contents: { type: String, default: 'unknown' },
+  phone: {
+    type: String,
+    required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'Pending',
+  },
+  totalPrice: {
+    type: Number,
+  },
+  user: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: 'User',
+  },
+  dateOrdered: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+orderSchema.virtual('id').get(function () {
+  return this._id.toHexString();
+});
+
+orderSchema.set('toJSON', {
+  virtuals: true,
+});
+
+orderSchema.pre(/^find/, function (next) {
+  this.populate('user').populate({
+    path: 'orderItems',
+    populate: {
+      path: 'product',
+      select: 'name description price',
+    },
+  });
+  next();
 });
 
 const Order = mongoose.model('Order', orderSchema);
