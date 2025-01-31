@@ -1,21 +1,10 @@
 const mongoose = require('mongoose');
 // const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const Product = require('../models/productsModel');
 const handlerFactory = require('./handlerFactory');
 const Category = require('../models/categoryModel');
 const AppError = require('../helpers/appError');
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'public/uploads');
-//   },
-//   filename: function (req, file, cb) {
-//     const fileName = file.originalname.replace(' ', '-');
-//     cb(null, `${fileName}-${Date.now()}`);
-//   },
-// });
-
-// const upload = multer({ storage: storage });
 
 exports.validateID = (req, res, next) => {
   const { id } = req.params;
@@ -39,7 +28,30 @@ exports.checkCategory = async (req, res, next) => {
   next();
 };
 
-exports.createProduct = handlerFactory.createData(Product);
+exports.createProduct = async (req, res, next) => {
+  const { images } = req.files;
+  const imagesUrl = await Promise.all(
+    images.map(async (image) => {
+      const result = await cloudinary.uploader.upload(image.path, {
+        resource_type: 'image',
+      });
+      return result.secure_url;
+    }),
+  );
+
+  req.body.images = imagesUrl;
+
+  const data = await Product.create(req.body);
+  if (!data)
+    return res.status(404).json({
+      status: 'fail',
+      message: 'The Product Cannot be Created!',
+    });
+  res.status(201).json({
+    status: 'success',
+    data,
+  });
+};
 
 exports.getAllProducts = async (req, res, next) => {
   let filter = {};
@@ -50,10 +62,9 @@ exports.getAllProducts = async (req, res, next) => {
     path: 'category',
     select: 'name -_id',
   });
-  console.log(products);
 
   res.status(200).json({
-    status: 'Success',
+    status: 'success',
     data: products,
   });
 };

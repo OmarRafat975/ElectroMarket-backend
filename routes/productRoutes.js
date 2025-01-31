@@ -1,14 +1,16 @@
 const express = require('express');
 const productController = require('../controllers/productController');
 const { protect, restrict } = require('../helpers/authJWT');
+const upload = require('../helpers/multer');
 
 const router = express.Router();
 
 router
   .route('/')
   .post(
-    restrict,
     protect,
+    restrict,
+    upload.fields([{ name: 'images' }]),
     productController.validateCategory,
     productController.createProduct,
   )
@@ -23,10 +25,11 @@ router
   .all(productController.validateID)
   .get(productController.getProduct)
   .patch(
+    protect,
     restrict,
     productController.checkCategory,
     productController.updateProduct,
   )
-  .delete(restrict, productController.deleteProduct);
+  .delete(protect, restrict, productController.deleteProduct);
 
 module.exports = router;

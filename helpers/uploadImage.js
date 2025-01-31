@@ -1,0 +1,12 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+const cloudinary = require('cloudinary').v2;
+
+const connectCloudinary = async () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET, // Click 'View API Keys' above to copy your API secret
+  });
+};
+
+module.exports = connectCloudinary;

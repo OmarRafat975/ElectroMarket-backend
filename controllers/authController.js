@@ -121,3 +121,20 @@ exports.updateMyPassword = async (req, res, next) => {
 
   createSendToken(user, 200, res);
 };
+
+exports.adminLogin = async (req, res, next) => {
+  if (!req.body.email || !req.body.password)
+    return next(new AppError('Please Enter Your Email and Password!', 400));
+
+  const user = await User.findOne({ email: req.body.email }).select(
+    '+password +isAdmin',
+  );
+
+  if (!user || !(await user.correctPassword(req.body.password, user.password)))
+    return next(new AppError('Incorrect Email or Password', 401));
+
+  if (!user.isAdmin)
+    return next(new AppError('Incorrect Email or Password!', 401));
+
+  createSendToken(user, 200, res);
+};
