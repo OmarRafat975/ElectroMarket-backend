@@ -39,13 +39,13 @@ exports.protect = async (req, res, next) => {
       ),
     );
 
-  req.user = user;
+  req.user = decoded.id;
 
   next();
 };
 
 exports.restrict = async (req, res, next) => {
-  const user = await User.findById(req.user.id).select('+isAdmin');
+  const user = await User.findById(req.user).select('+isAdmin');
   if (!user.isAdmin) {
     return next(
       new AppError('you dont have permission to perform this action', 403),

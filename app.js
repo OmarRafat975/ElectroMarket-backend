@@ -12,6 +12,7 @@ const productRouter = require('./routes/productRoutes');
 const categoryRouter = require('./routes/categoryRoutes');
 const usersRouter = require('./routes/usersRoutes');
 const ordersRouter = require('./routes/ordersRoutes');
+const cartRouter = require('./routes/cartRoutes');
 // const authJwt = require('./helpers/jwtAuth');
 const errorHandler = require('./helpers/errorHandler');
 const AppError = require('./helpers/appError');
@@ -48,6 +49,7 @@ app.use(`${api}/products`, productRouter);
 app.use(`${api}/category`, categoryRouter);
 app.use(`${api}/users`, usersRouter);
 app.use(`${api}/orders`, ordersRouter);
+app.use(`${api}/cart`, cartRouter);
 
 app.all(/(.*)/, (req, res, next) => {
   next(new AppError(`Can't find  ${req.originalUrl} on This Site`, 404));
