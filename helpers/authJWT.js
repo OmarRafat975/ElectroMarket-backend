@@ -1,15 +1,20 @@
 const crypto = require('crypto');
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const AppError = require('./appError');
 const User = require('../models/userModel');
 
-const secret = process.env.JWT_SECRET;
+const accessSecret = process.env.JWT_ACCESS_SECRET;
 
-exports.createToken = (id) =>
+exports.createToken = (
+  id,
+  secret = accessSecret,
+  expires = process.env.JWT_ACCESS_EXPIRES,
+) =>
   jwt.sign({ id: id }, secret, {
-    expiresIn: process.env.JWT_EXPIRES,
+    expiresIn: expires,
   });
+
+exports.verify = async (token, secret) => await jwt.verify(token, secret);
 
 exports.protect = async (req, res, next) => {
   let token;
@@ -25,7 +30,9 @@ exports.protect = async (req, res, next) => {
       new AppError('You are not Logged in! Please log in to get access! ', 401),
     );
 
-  const decoded = await promisify(jwt.verify)(token, secret);
+  const decoded = await jwt.verify(token, accessSecret);
+
+  if (!decoded || !decoded.id) return res.sendStatus(401);
 
   const user = await User.findById(decoded.id);
 

@@ -14,40 +14,24 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
-  shippingAddress1: {
-    type: String,
-    required: true,
-  },
-  shippingAddress2: {
-    type: String,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  zip: {
-    type: String,
-    required: true,
-  },
-  country: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    default: 'Pending',
-  },
   totalPrice: {
     type: Number,
+    required: true,
+  },
+  paymentMethod: { type: String, required: true },
+  payment: { type: Boolean, required: true, default: false },
+  address: {
+    type: Object,
+    required: true,
   },
   user: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: 'User',
+  },
+  status: {
+    type: String,
+    required: true,
+    default: 'Order placed',
   },
   dateOrdered: {
     type: Date,
@@ -64,11 +48,10 @@ orderSchema.set('toJSON', {
 });
 
 orderSchema.pre(/^find/, function (next) {
-  this.populate('user').populate({
+  this.populate({ path: 'user', select: 'name' }).populate({
     path: 'orderItems',
     populate: {
       path: 'product',
-      select: 'name description price',
     },
   });
   next();

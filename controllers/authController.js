@@ -3,15 +3,24 @@ const AppError = require('../helpers/appError');
 const jwt = require('../helpers/authJWT');
 const sendEmail = require('../helpers/email');
 
-const createSendToken = (user, statusCode, res, data = null) => {
+const cookieExpires = process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000;
+const cookieOptions = {
+  maxAge: cookieExpires,
+  sameSite: 'None',
+  httpOnly: true,
+  secure: true,
+};
+
+const createSendToken = async (user, statusCode, res) => {
   const token = jwt.createToken(user.id);
-  const cookieExpires = process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000;
-  const cookieOptions = {
-    expires: new Date(Date.now() + cookieExpires),
-    httpOnly: true,
-  };
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-  res.cookie('jwt', token, cookieOptions);
+  const refreshToken = jwt.createToken(
+    user.id,
+    process.env.JWT_REFRESH_SECRET,
+    process.env.JWT_REFRESH_EXPIRES,
+  );
+
+  await User.findByIdAndUpdate(user.id, { token: refreshToken });
+  res.cookie('jwt', refreshToken, cookieOptions);
 
   user.password = undefined;
   user.isAdmin = undefined;
@@ -19,7 +28,6 @@ const createSendToken = (user, statusCode, res, data = null) => {
   res.status(statusCode).json({
     status: 'success',
     token,
-    data,
   });
 };
 
@@ -137,4 +145,41 @@ exports.adminLogin = async (req, res, next) => {
     return next(new AppError('Incorrect Email or Password!', 401));
 
   createSendToken(user, 200, res);
+};
+
+exports.HandleRefreshToken = async (req, res, next) => {
+  const { cookies } = req;
+
+  if (!cookies.jwt) return res.sendStatus(401);
+  const refreshToken = cookies.jwt;
+  const user = await User.findOne({ token: refreshToken });
+  if (!user) return res.sendStatus(403);
+
+  const decoded = await jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_SECRET,
+  );
+
+  const accessToken = jwt.createToken(decoded.id);
+  res.status(200).json({ token: accessToken });
+};
+
+exports.Logout = async (req, res, next) => {
+  const { cookies } = req;
+
+  if (!cookies.jwt) return res.sendStatus(401);
+
+  const refreshToken = cookies.jwt;
+  const user = await User.findOne({ token: refreshToken });
+
+  if (!user) {
+    res.clearCookie('jwt', cookieOptions);
+    return res.sendStatus(204);
+  }
+
+  await User.findByIdAndUpdate(user._id, { token: '' });
+
+  res.clearCookie('jwt', cookieOptions);
+
+  res.sendStatus(204);
 };

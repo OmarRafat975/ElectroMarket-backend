@@ -5,10 +5,12 @@ const { protect, restrict } = require('../helpers/authJWT');
 
 const router = express.Router();
 
+router.get('/user/refresh', authController.HandleRefreshToken);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/login/admin', authController.adminLogin);
 
+router.get('/logout', protect, authController.Logout);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch('/updateMyPassword', protect, authController.updateMyPassword);

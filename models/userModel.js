@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
     default: false,
     select: false,
   },
+  token: String,
   phone: {
     type: Number,
   },

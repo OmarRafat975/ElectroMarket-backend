@@ -14,10 +14,8 @@ const handleValidationErrorDB = (err) => {
   const message = `Invalid input data : ${errors.join('. ')}`;
   return new AppError(message, 400);
 };
-const handleInvalidToken = () =>
-  new AppError('Invalid Token Please login Again', 401);
-const handleExpiredToken = () =>
-  new AppError('Expired Token Please login Again', 401);
+const handleInvalidToken = () => new AppError('Please Try to Login Again', 401);
+const handleExpiredToken = () => new AppError('Please Try to Login Again', 401);
 
 const sendErrorDiv = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
