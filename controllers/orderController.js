@@ -115,10 +115,7 @@ exports.verifyOrders = async (req, res, next) => {
 exports.getUserOrders = async (req, res, next) => {
   const orders = await Order.find({ user: req.user });
 
-  console.log(orders);
-
-  const ordersData = orders.map((order) => {
-    console.log(order.orderItems);
+  const ordersData = orders.map((order) =>
     order.orderItems.map((item) => ({
       quantity: item.quantity,
       id: item.product.id,
@@ -134,8 +131,8 @@ exports.getUserOrders = async (req, res, next) => {
       orderedDate: order.dateOrdered,
       status: order.status,
       paymentMethod: order.paymentMethod,
-    }));
-  });
+    })),
+  );
 
   ordersData.reverse();
 

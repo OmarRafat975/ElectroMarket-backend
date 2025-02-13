@@ -6,9 +6,10 @@ const sendEmail = require('../helpers/email');
 const cookieExpires = process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000;
 const cookieOptions = {
   maxAge: cookieExpires,
-  sameSite: 'None',
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Use 'Lax' in development
   httpOnly: true,
-  secure: true,
+  secure: process.env.NODE_ENV === 'production', // `secure: false` in development (HTTP)
+  partitioned: true,
 };
 
 const createSendToken = async (user, statusCode, res) => {
@@ -20,14 +21,15 @@ const createSendToken = async (user, statusCode, res) => {
   );
 
   await User.findByIdAndUpdate(user.id, { token: refreshToken });
-  res.cookie('jwt', refreshToken, cookieOptions);
 
   user.password = undefined;
   user.isAdmin = undefined;
 
+  res.cookie('jwt', refreshToken, cookieOptions);
   res.status(statusCode).json({
     status: 'success',
     token,
+    name: user.name,
   });
 };
 
@@ -149,10 +151,9 @@ exports.adminLogin = async (req, res, next) => {
 
 exports.HandleRefreshToken = async (req, res, next) => {
   const { cookies } = req;
-
   if (!cookies.jwt) return res.sendStatus(401);
   const refreshToken = cookies.jwt;
-  const user = await User.findOne({ token: refreshToken });
+  const user = await User.findOne({ token: refreshToken.toString() });
   if (!user) return res.sendStatus(403);
 
   const decoded = await jwt.verify(
@@ -161,7 +162,9 @@ exports.HandleRefreshToken = async (req, res, next) => {
   );
 
   const accessToken = jwt.createToken(decoded.id);
-  res.status(200).json({ token: accessToken });
+  res
+    .status(200)
+    .json({ status: 'success', token: accessToken, name: user.name });
 };
 
 exports.Logout = async (req, res, next) => {
@@ -174,7 +177,7 @@ exports.Logout = async (req, res, next) => {
 
   if (!user) {
     res.clearCookie('jwt', cookieOptions);
-    return res.sendStatus(204);
+    return res.sendStatus(403);
   }
 
   await User.findByIdAndUpdate(user._id, { token: '' });

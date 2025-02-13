@@ -25,30 +25,34 @@ exports.protect = async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  if (!token)
+  if (!token || token === undefined)
     return next(
       new AppError('You are not Logged in! Please log in to get access! ', 401),
     );
 
-  const decoded = await jwt.verify(token, accessSecret);
+  // const decoded = await jwt.verify(token, accessSecret);
 
-  if (!decoded || !decoded.id) return res.sendStatus(401);
+  jwt.verify(token, accessSecret, async (err, decoded) => {
+    if (err) return res.sendStatus(403); //invalid token
 
-  const user = await User.findById(decoded.id);
+    if (!decoded || !decoded.id) return res.sendStatus(403);
 
-  if (!user) return next(new AppError('the user is no longer exist!', 401));
+    const user = await User.findById(decoded.id);
 
-  if (user.isChangedPasswordAfter(decoded.iat))
-    return next(
-      new AppError(
-        'User recently changed the password! please log in again.',
-        401,
-      ),
-    );
+    if (!user) return next(new AppError('the user is no longer exist!', 401));
 
-  req.user = decoded.id;
+    if (user.isChangedPasswordAfter(decoded.iat))
+      return next(
+        new AppError(
+          'User recently changed the password! please log in again.',
+          401,
+        ),
+      );
 
-  next();
+    req.user = decoded.id;
+
+    next();
+  });
 };
 
 exports.restrict = async (req, res, next) => {

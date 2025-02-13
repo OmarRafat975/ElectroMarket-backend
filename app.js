@@ -19,8 +19,29 @@ const AppError = require('./helpers/appError');
 const app = express();
 const api = process.env.API_V;
 
+const allowedOrigins = [
+  'https://www.yoursite.com',
+  'http://localhost:5173',
+  'http://localhost:8080',
+  'http://localhost:3000',
+];
+
 //MiddleWare
-app.use(cors());
+
+app.use((req, res, next) => {
+  if (allowedOrigins.includes(req.headers.origin)) {
+    res.header('Access-Control-Allow-Credentials', true);
+  }
+  next();
+});
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
 
 app.use(cookieParser());
 
