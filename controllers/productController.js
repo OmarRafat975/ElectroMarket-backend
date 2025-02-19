@@ -58,14 +58,35 @@ exports.getAllProducts = async (req, res, next) => {
   if (req.query.categories) {
     filter = { category: req.query.categories.split(',') };
   }
-  const products = await Product.find(filter).populate({
+  let query = Product.find(filter).populate({
     path: 'category',
     select: 'name -_id',
   });
 
+  const page = +req.query.page || 1;
+  const pageSize = +req.query.limit || 12;
+  const skip = (page - 1) * pageSize;
+  const total = await Product.countDocuments();
+
+  const pages = Math.ceil(total / pageSize);
+
+  query = query.skip(skip).limit(pageSize);
+
+  const products = await query;
+
+  if (page > pages) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'No page found',
+    });
+  }
+
   res.status(200).json({
     status: 'success',
-    data: products,
+    count: products.length,
+    page,
+    pages,
+    products,
   });
 };
 
