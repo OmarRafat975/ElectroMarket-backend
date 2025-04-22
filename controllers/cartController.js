@@ -49,19 +49,25 @@ exports.getUserCart = async (req, res, next) => {
     populate: { path: 'category', select: 'name' },
   });
 
-  const cartData = userData.cartData.map((item) => ({
-    quantity: item.quantity,
-    id: item.product.id,
-    name: item.product.name,
-    description: item.product.description,
-    richDescription: item.product.richDescription,
-    images: item.product.images,
-    price: item.product.price,
-    category: item.product.category.name,
-    countInStock: item.product.countInStock,
-    isFeatured: item.product.isFeatured,
-    dateCreated: item.product.dateCreated,
-  }));
+  const cartData = userData.cartData
+    .map((item) => {
+      if (item.product === null) return null;
+
+      return {
+        quantity: item.quantity,
+        id: item.product._id,
+        name: item.product.name,
+        description: item.product.description,
+        richDescription: item.product.richDescription,
+        images: item.product.images,
+        price: item.product.price,
+        category: item.product.category.name,
+        countInStock: item.product.countInStock,
+        isFeatured: item.product.isFeatured,
+        dateCreated: item.product.dateCreated,
+      };
+    })
+    .filter((item) => item !== null);
 
   res.status(201).json({
     status: 'success',

@@ -64,7 +64,7 @@ exports.getAllProducts = async (req, res, next) => {
   });
 
   const page = +req.query.page || 1;
-  const pageSize = +req.query.limit || 12;
+  const pageSize = +req.query.limit || 6;
   const skip = (page - 1) * pageSize;
   const total = await Product.countDocuments();
 
