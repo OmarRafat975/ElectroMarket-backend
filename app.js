@@ -20,7 +20,8 @@ const app = express();
 const api = process.env.API_V;
 
 const allowedOrigins = [
-  'https://www.yoursite.com',
+  process.env.FRONT_URL,
+  process.env.BACK_URL,
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:8080',
